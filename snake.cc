@@ -6,7 +6,8 @@
 using namespace std;
 
 struct snake {
-    int len, col, row, dir, status;
+    int col, row, dir, status;
+    long unsigned int len;
     vector<char> board;
     list<pair<int, int>> player;
     snake(int c, int r, int l)
@@ -19,9 +20,9 @@ typedef struct snake snake;
 pair<int, int> create_new_piece(pair<int, int> & head, int dir) {
     pair<int, int> res = head;
     if (dir == SNAKE_UP) 
-        res.second+=1;
-    else if (dir == SNAKE_DOWN) 
         res.second-=1;
+    else if (dir == SNAKE_DOWN) 
+        res.second+=1;
     else if (dir == SNAKE_RIGHT) 
         res.first+=1;
     else
@@ -62,7 +63,7 @@ void snake_destroy (struct snake * game) {
 
 int snake_start (struct snake * game, int c, int r, int d) {
     list<pair<int,int>> & player = game->player;
-    if (game->status== SNAKE_FAIL || c < 0 || r < 0 || r >= game->row || c >= game->col || checkDir(d)){
+    if (c < 0 || r < 0 || r >= game->row || c >= game->col || checkDir(d)){
         game->status = SNAKE_FAIL;
         return SNAKE_FAIL;
     } 
@@ -73,8 +74,7 @@ int snake_start (struct snake * game, int c, int r, int d) {
 int snake_change_direction (struct snake * game, int dir) {
     int & player = game->dir;
     if ((player == SNAKE_DOWN && dir == SNAKE_UP) || (player == SNAKE_RIGHT && dir == SNAKE_LEFT)
-    || (player == SNAKE_UP && dir == SNAKE_DOWN )|| (player == SNAKE_LEFT && dir == SNAKE_RIGHT)
-    || game->status == SNAKE_FAIL) {
+    || (player == SNAKE_UP && dir == SNAKE_DOWN )|| (player == SNAKE_LEFT && dir == SNAKE_RIGHT)) {
         game->status = SNAKE_FAIL;
         return SNAKE_FAIL;
     }
@@ -83,7 +83,8 @@ int snake_change_direction (struct snake * game, int dir) {
 }
 
 int snake_step (struct snake * game) {
-    if (game->status == SNAKE_FAIL) return SNAKE_FAIL;
+    if (game->status != SNAKE_OKAY) 
+        return SNAKE_FAIL;
     pair<int, int> new_piece = create_new_piece(game->player.front(), game->dir);
     if (check_out_of_bounds(new_piece, game->row, game->col) ||
         check_hits(new_piece, game->player)) {
@@ -93,6 +94,7 @@ int snake_step (struct snake * game) {
     game->player.push_front(new_piece);
     if (game->player.size() > game->len)
         game->player.pop_back();
+    return SNAKE_OKAY;
 }
 const char * snake_get_field (const struct snake * game) {
     vector<char> board = game->board;
